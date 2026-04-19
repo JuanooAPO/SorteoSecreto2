@@ -23,7 +23,7 @@ public class Sorteo {
     private Random random;
 
     public Sorteo(String nombre, String descripcion, double presupuesto,
-                  LocalDate fechaEvento, Usuario organizador,EstadoSorteo estado) {
+                  LocalDate fechaEvento, Usuario organizador) {
 
         if (organizador.getTipo() != TipoUsuario.ORGANIZADOR) {
             throw new IllegalArgumentException(
@@ -142,6 +142,25 @@ public class Sorteo {
         estado = EstadoSorteo.SORTEADO;
     }
 
+    public void modificarSorteo(Usuario accionador,
+                                String nuevoNombre,
+                                String nuevaDescripcion,
+                                double nuevoPresupuesto,
+                                LocalDate nuevaFecha) {
+        validarOrganizador(accionador);
+
+        if (estado == EstadoSorteo.SORTEADO) {
+            throw new IllegalStateException(
+                    "El sorteo ya fue ejecutado y no se puede modificar."
+            );
+        }
+
+        this.nombre = nuevoNombre;
+        this.descripcion = nuevaDescripcion;
+        this.presupuestoPorRegalo = nuevoPresupuesto;
+        this.fechaEvento = nuevaFecha;
+    }
+
     private boolean violaRestriccion(Usuario d, Usuario r) {
         return restricciones.stream().anyMatch(res -> res.aplica(d, r));
     }
@@ -150,23 +169,48 @@ public class Sorteo {
     // Consultas
     // -------------------------------
 
-public void consultarParticipantes() {
-    List<Usuario> participantes = usuarios.stream()
-            .filter(u -> u.getTipo() == TipoUsuario.PARTICIPANTE)
-            .toList();
+    public void consultarParticipantes() {
+        List<Usuario> participantes = usuarios.stream()
+                .filter(u -> u.getTipo() == TipoUsuario.PARTICIPANTE)
+                .toList();
 
-    if (participantes.isEmpty()) {
-        System.out.println("Aún no hay participantes registrados.");
-        return;
+        if (participantes.isEmpty()) {
+            System.out.println("Aún no hay participantes registrados.");
+            return;
+        }
+
+        System.out.println("[Participantes]");
+
+        for (int i = 0; i < participantes.size(); i++) {
+            Usuario u = participantes.get(i);
+            System.out.println((i + 1) + ". " + u.getNombre());
+        }
     }
 
-    System.out.println("[Participantes]");
 
-    for (int i = 0; i < participantes.size(); i++) {
-        Usuario u = participantes.get(i);
-        System.out.println((i + 1) + ". " + u.getNombre());
+    public void mostrarResumen() {
+        System.out.println("[Resumen del sorteo]");
+        System.out.println("Nombre: " + nombre);
+        System.out.println("Descripción: " + descripcion);
+        System.out.println("Presupuesto sugerido: " + presupuestoPorRegalo);
+        System.out.println("Fecha del evento: " + fechaEvento);
+        System.out.println("Estado: " + estado);
+
+        if (estado != EstadoSorteo.SORTEADO) {
+            System.out.println("Error: el sorteo aún no ha sido ejecutado.");
+            return;
+        }
+
+        if (asignaciones.isEmpty()) {
+            System.out.println("Advertencia: no hay asignaciones almacenadas.");
+            return;
+        }
+
+        System.out.println("\n[Asignaciones]");
+        for (Map.Entry<Usuario, Usuario> e : asignaciones.entrySet()) {
+            System.out.println(e.getKey().getNombre() + " → " + e.getValue().getNombre());
+        }
     }
-}
 
 
     public EstadoSorteo getEstado() {
@@ -175,5 +219,21 @@ public void consultarParticipantes() {
 
     public List<Usuario> getUsuarios() {
         return usuarios;
+    }
+
+    public String getNombre() {
+    return nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public double getPresupuestoPorRegalo() {
+        return presupuestoPorRegalo;
+    }
+
+    public LocalDate getFechaEvento() {
+        return fechaEvento;
     }
 }
