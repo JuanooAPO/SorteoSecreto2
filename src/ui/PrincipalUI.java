@@ -30,7 +30,7 @@ public class PrincipalUI {
             System.out.println();
             switch (opcion) {
                 case 1 -> crearSorteo();
-                case 2 -> registrarParticipante();
+                case 2 -> registrarParticipantes();
                 case 3 -> consultarParticipantes();
                 case 4 -> ejecutarSorteo();
                 case 5 -> consultarEstado();
@@ -68,6 +68,49 @@ public class PrincipalUI {
         System.out.println("Sorteo creado correctamente.");
 
     }
+
+
+
+    private static void registrarParticipantes() {
+        if (sorteo == null) {
+            System.out.println("Error: primero debe registrar el sorteo.");
+            return;
+        }
+
+        if (sorteo.getEstado() == EstadoSorteo.SORTEADO) {
+            System.out.println("Error: el sorteo ya fue ejecutado. No se pueden agregar participantes.");
+            return;
+        }
+
+        int n = leerEntero("¿Cuántos participantes desea agregar ahora? ");
+        if (n <= 0) {
+            System.out.println("No se agregaron participantes.");
+            return;
+        }
+
+        for (int i = 0; i < n; i++) {
+            System.out.println("\n[Participante #" + (i + 1) + "]");
+
+            String correo = leerLineaNoVacia("Correo: ");
+            String nombre = leerLineaNoVacia("Nombre: ");
+
+            Usuario participante = new Usuario(
+                    correo,
+                    nombre,
+                    TipoUsuario.PARTICIPANTE
+            );
+
+            try {
+                sorteo.agregarUsuario(organizador, participante);
+                System.out.println("Participante agregado: " + nombre);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Error: participante duplicado (se ignora): " + correo);
+                i--; // repite esta vuelta para completar la cantidad pedida
+            }
+        }
+    }
+
+
 
     private static void registrarParticipante() {
         System.out.print("Correo: ");
