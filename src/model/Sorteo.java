@@ -150,6 +150,7 @@ public class Sorteo {
     // Consultas
     // -------------------------------
 
+
     public EstadoSorteo getEstado() {
         return estado;
     }

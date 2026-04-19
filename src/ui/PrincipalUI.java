@@ -1,11 +1,11 @@
 package ui;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Scanner;
 import model.Sorteo;
 import model.TipoUsuario;
 import model.Usuario;
-import java.time.LocalDate;
-import java.util.Scanner;
-
 /**
  * Interfaz de usuario en consola.
  */
@@ -28,11 +28,11 @@ public class PrincipalUI {
             int opcion = leerEntero("Elija una opción: ");
             System.out.println();
             switch (opcion) {
-                case 1 -> registrarSorteo();
-                case 2 -> registrarParticipantes();
-                case 3 -> consultarParticipantes();
-                case 4 -> generarSorteo();
-                case 5 -> mostrarResumen();
+                case 1 -> crearSorteo();
+                case 2 -> registrarParticipante();
+                case 3 -> consultarEstado();
+                case 4 -> ejecutarSorteo();
+                case 5 -> consultarEstado();
                 case 6 -> {
                     System.out.println("¡Hasta luego!");
                     salir = true;
@@ -94,5 +94,143 @@ public class PrincipalUI {
 
     private static void consultarEstado() {
         System.out.println("Estado del sorteo: " + sorteo.getEstado());
+    }
+
+
+
+
+    /**
+     * Contrato: leerLineaNoVacia
+     *
+     * Descripción:
+     * Solicita al usuario un dato de tipo texto y valida que
+     * la entrada no esté vacía ni compuesta solo por espacios.
+     *
+     * Entradas:
+     * - prompt : String
+     * - linea ingresada por el usuario : String
+     *
+     * Salidas:
+     * - textoValido : String
+     *
+     * Ejemplo de ejecución:
+     * Entrada:
+     * prompt = "Nombre del sorteo: "
+     * usuario escribe = "Navidad 2026"
+     *
+     * Salida:
+     * "Navidad 2026"
+     */
+    private static String leerLineaNoVacia(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String linea = scanner.nextLine();
+            if (linea != null && !linea.trim().isEmpty()) {
+                return linea.trim();
+            }
+            System.out.println("La entrada no puede estar vacía. Intente nuevamente.");
+        }
+    }
+
+    /**
+     * Contrato: leerEntero
+     *
+     * Descripción:
+     * Solicita al usuario un número entero y valida que
+     * el valor ingresado corresponda a un entero válido.
+     *
+     * Entradas:
+     * - prompt : String
+     * - valor ingresado por el usuario : String
+     *
+     * Salidas:
+     * - numeroEntero : int
+     *
+     * Ejemplo de ejecución:
+     * Entrada:
+     * prompt = "Elija una opción: "
+     * usuario escribe = "4"
+     *
+     * Salida:
+     * 4
+     */    
+    private static int leerEntero(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String linea = scanner.nextLine();
+            try {
+                return Integer.parseInt(linea.trim());
+            } catch (NumberFormatException ex) {
+                System.out.println("Entero inválido. Intente nuevamente.");
+            }
+        }
+    }
+
+    /**
+     * Contrato: leerDecimal
+     *
+     * Descripción:
+     * Solicita al usuario un número decimal y valida que
+     * el dato ingresado sea un valor numérico válido.
+     *
+     * Entradas:
+     * - prompt : String
+     * - valor ingresado por el usuario : String
+     *
+     * Salidas:
+     * - numeroDecimal : double
+     *
+     * Ejemplo de ejecución:
+     * Entrada:
+     * prompt = "Presupuesto sugerido por regalo: "
+     * usuario escribe = "50000.5"
+     *
+     * Salida:
+     * 50000.5
+     */
+    private static double leerDecimal(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String linea = scanner.nextLine();
+            try {
+                return Double.parseDouble(linea.trim());
+            } catch (NumberFormatException ex) {
+                System.out.println("Número decimal inválido. Intente nuevamente.");
+            }
+        }
+    }
+
+    /**
+     * Contrato: leerFecha
+     *
+     * Descripción:
+     * Solicita al usuario una fecha en formato yyyy-MM-dd y valida
+     * que el dato ingresado corresponda a una fecha correcta.
+     *
+     * Entradas:
+     * - prompt : String
+     * - fecha ingresada por el usuario : String
+     *
+     * Salidas:
+     * - fechaValida : LocalDate
+     *
+     * Ejemplo de ejecución:
+     * Entrada:
+     * prompt = "Fecha del evento (yyyy-MM-dd): "
+     * usuario escribe = "2026-12-20"
+     *
+     * Salida:
+     * 2026-12-20
+     */
+    private static LocalDate leerFecha(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String linea = scanner.nextLine();
+            try {
+                return LocalDate.parse(linea.trim());
+            } catch (DateTimeParseException ex) {
+                System.out.println("Fecha inválida. Use el formato yyyy-MM-dd. Intente nuevamente.");
+            }
+        }
     }
 }
