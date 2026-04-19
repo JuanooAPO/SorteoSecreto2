@@ -3,6 +3,7 @@ package ui;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
+import model.EstadoSorteo;
 import model.Sorteo;
 import model.TipoUsuario;
 import model.Usuario;
@@ -30,7 +31,7 @@ public class PrincipalUI {
             switch (opcion) {
                 case 1 -> crearSorteo();
                 case 2 -> registrarParticipante();
-                case 3 -> consultarEstado();
+                case 3 -> consultarParticipantes();
                 case 4 -> ejecutarSorteo();
                 case 5 -> consultarEstado();
                 case 6 -> {
@@ -56,20 +57,16 @@ public class PrincipalUI {
     }
 
     private static void crearSorteo() {
-        System.out.print("Nombre: ");
-        String nombre = scanner.nextLine();
 
-        System.out.print("Descripción: ");
-        String desc = scanner.nextLine();
 
-        System.out.print("Presupuesto: ");
-        double presupuesto = Double.parseDouble(scanner.nextLine());
-
-        System.out.print("Fecha (yyyy-mm-dd): ");
-        LocalDate fecha = LocalDate.parse(scanner.nextLine());
-
-        sorteo = new Sorteo(nombre, desc, presupuesto, fecha, organizador);
+        System.out.println("[Registrar sorteo]");
+        String nombre = leerLineaNoVacia("Nombre del sorteo: ");
+        String desc = leerLineaNoVacia("Descripción: ");
+        double presupuesto = leerDecimal("Presupuesto sugerido por regalo: ");
+        LocalDate fecha = leerFecha("Fecha del evento (yyyy-MM-dd): ");
+        sorteo = new Sorteo(nombre, desc, presupuesto, fecha, organizador, EstadoSorteo.CREADO);
         System.out.println("Sorteo creado correctamente.");
+
     }
 
     private static void registrarParticipante() {
@@ -97,7 +94,15 @@ public class PrincipalUI {
     }
 
 
+private static void consultarParticipantes() {
 
+    if (sorteo == null) {
+        System.out.println("Primero debe crear el sorteo.");
+        return;
+    }
+
+    sorteo.consultarParticipantes();
+}
 
     /**
      * Contrato: leerLineaNoVacia

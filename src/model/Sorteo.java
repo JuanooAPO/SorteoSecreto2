@@ -23,7 +23,7 @@ public class Sorteo {
     private Random random;
 
     public Sorteo(String nombre, String descripcion, double presupuesto,
-                  LocalDate fechaEvento, Usuario organizador) {
+                  LocalDate fechaEvento, Usuario organizador,EstadoSorteo estado) {
 
         if (organizador.getTipo() != TipoUsuario.ORGANIZADOR) {
             throw new IllegalArgumentException(
@@ -149,6 +149,24 @@ public class Sorteo {
     // -------------------------------
     // Consultas
     // -------------------------------
+
+public void consultarParticipantes() {
+    List<Usuario> participantes = usuarios.stream()
+            .filter(u -> u.getTipo() == TipoUsuario.PARTICIPANTE)
+            .toList();
+
+    if (participantes.isEmpty()) {
+        System.out.println("Aún no hay participantes registrados.");
+        return;
+    }
+
+    System.out.println("[Participantes]");
+
+    for (int i = 0; i < participantes.size(); i++) {
+        Usuario u = participantes.get(i);
+        System.out.println((i + 1) + ". " + u.getNombre());
+    }
+}
 
 
     public EstadoSorteo getEstado() {
