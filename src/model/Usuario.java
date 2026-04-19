@@ -16,6 +16,10 @@ public class Usuario {
         this.tipo = tipo;
     }
 
+    public void setCorreo(String correo) {
+    this.correo = correo;
+    }
+
     public String getCorreo() {
         return correo;
     }
@@ -31,4 +35,5 @@ public class Usuario {
     public void modificarNombre(String nuevoNombre) {
         this.nombre = nuevoNombre.trim();
     }
+
 }

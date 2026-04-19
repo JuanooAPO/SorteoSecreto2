@@ -32,12 +32,17 @@ public class PrincipalUI {
             switch (opcion) {
                 case 1 -> crearSorteo();
                 case 2 -> modificarSorteo();
-                case 3 -> registrarParticipantes();
-                case 4 -> consultarParticipantes();
-                case 5 -> ejecutarSorteo();
-                case 6 -> mostrarResumen();
-                case 7 -> listarSorteos();
-                case 8 -> {
+                case 3 -> clonarSorteo();
+                case 4 -> registrarParticipantes();
+                case 5 -> modificarParticipante();
+                case 6 -> borrarParticipante();
+                case 7 -> consultarParticipantes();
+                case 8 -> registrarRestriccion();
+                case 9 -> anularSorteo();
+                case 10 -> ejecutarSorteo();
+                case 11 -> mostrarResumen();
+                case 12 -> listarSorteos();
+                case 13 -> {
                     System.out.println("¡Hasta luego!");
                     salir = true;
                 }
@@ -54,12 +59,17 @@ public class PrincipalUI {
         System.out.println("===== SorteoSecreto (ES) =====");
         System.out.println("1. Registrar datos del sorteo");
         System.out.println("2. Modificar sorteo");
-        System.out.println("3. Registrar participantes (manual)");
-        System.out.println("4. Consultar participantes");
-        System.out.println("5. Generar sorteo");
-        System.out.println("6. Resumen del sorteo");
-        System.out.println("7. Listar sorteos");
-        System.out.println("8. Salir");
+        System.out.println("3. Clonar sorteo");
+        System.out.println("4. Registrar participantes");
+        System.out.println("5. Modificar participante");
+        System.out.println("6. Borrar participante");
+        System.out.println("7. Consultar participantes");
+        System.out.println("8. Registrar restricción de asignación");
+        System.out.println("9. Anular sorteo");
+        System.out.println("10. Generar sorteo");
+        System.out.println("11. Resumen del sorteo");
+        System.out.println("12. Listar sorteos");
+        System.out.println("13. Salir");
         System.out.println("==============================");
     }
 
@@ -83,6 +93,38 @@ public class PrincipalUI {
 
         sorteos.add(nuevoSorteo);
         System.out.println("Sorteo creado correctamente. Total sorteos: " + sorteos.size());
+    }
+
+    private static void clonarSorteo() {
+        if (sorteos.isEmpty()) {
+            System.out.println("Error: no hay sorteos registrados para clonar.");
+            return;
+        }
+
+        System.out.println("[Clonar sorteo]");
+        Sorteo sorteoOriginal = seleccionarSorteo();
+
+        if (sorteoOriginal == null) {
+            return;
+        }
+
+        String nuevoNombre = leerLineaNoVacia("Ingrese el nombre del sorteo clonado: ");
+
+        if (existeSorteoConNombre(nuevoNombre)) {
+            System.out.println("Error: ya existe un sorteo con ese nombre.");
+            return;
+        }
+
+        try {
+            Sorteo sorteoClonado = sorteoOriginal.clonarSorteo(organizador, nuevoNombre);
+            sorteos.add(sorteoClonado);
+            System.out.println("Sorteo clonado correctamente.");
+            System.out.println("Nuevo sorteo: " + sorteoClonado.getNombre());
+        } catch (SecurityException e) {
+            System.out.println("Error de permisos: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
     private static void listarSorteos() {
@@ -207,8 +249,6 @@ public class PrincipalUI {
     }
 
 
-    
-
     private static void consultarEstado() {
         if (sorteos.isEmpty()) {
             System.out.println("Error: aún no hay sorteos registrados.");
@@ -250,7 +290,37 @@ public class PrincipalUI {
         }
     }
 
-   
+    private static void anularSorteo() {
+        if (sorteos.isEmpty()) {
+            System.out.println("Error: no hay sorteos registrados.");
+            return;
+        }
+
+        System.out.println("[Anular sorteo]");
+        Sorteo sorteoSeleccionado = seleccionarSorteo();
+
+        if (sorteoSeleccionado == null) {
+            return;
+        }
+
+        try {
+            sorteoSeleccionado.anularSorteo(organizador);
+            System.out.println("Sorteo anulado correctamente. Estado = " + sorteoSeleccionado.getEstado());
+        } catch (IllegalStateException e) {
+            System.out.println("Error: " + e.getMessage());
+        } catch (SecurityException e) {
+            System.out.println("Error de permisos: " + e.getMessage());
+        }
+    }
+
+    private static boolean existeSorteoConNombre(String nombre) {
+        for (Sorteo s : sorteos) {
+            if (s.getNombre().equalsIgnoreCase(nombre.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
    
     private static void consultarParticipantes() {
         if (sorteos.isEmpty()) {
@@ -267,6 +337,156 @@ public class PrincipalUI {
     }
 
     
+    private static void listarParticipantesDeSorteo(Sorteo sorteoSeleccionado) {
+        java.util.List<Usuario> participantes = sorteoSeleccionado.getParticipantes();
+
+        if (participantes.isEmpty()) {
+            System.out.println("Aún no hay participantes registrados en este sorteo.");
+            return;
+        }
+
+        System.out.println("[Participantes del sorteo]");
+        for (int i = 0; i < participantes.size(); i++) {
+            Usuario u = participantes.get(i);
+            System.out.println((i + 1) + ". " + u.getNombre() + " - " + u.getCorreo());
+        }
+    }
+
+    private static Usuario seleccionarParticipante(Sorteo sorteoSeleccionado) {
+        java.util.List<Usuario> participantes = sorteoSeleccionado.getParticipantes();
+
+        if (participantes.isEmpty()) {
+            System.out.println("Aún no hay participantes registrados en este sorteo.");
+            return null;
+        }
+
+        listarParticipantesDeSorteo(sorteoSeleccionado);
+        int opcion = leerEntero("Seleccione el número del participante: ");
+
+        if (opcion < 1 || opcion > participantes.size()) {
+            System.out.println("Error: selección inválida.");
+            return null;
+        }
+
+        return participantes.get(opcion - 1);
+    }
+
+    private static void modificarParticipante() {
+        if (sorteos.isEmpty()) {
+            System.out.println("Error: primero debe registrar al menos un sorteo.");
+            return;
+        }
+
+        System.out.println("[Modificar participante]");
+        Sorteo sorteoSeleccionado = seleccionarSorteo();
+
+        if (sorteoSeleccionado == null) {
+            return;
+        }
+
+        Usuario participanteSeleccionado = seleccionarParticipante(sorteoSeleccionado);
+        if (participanteSeleccionado == null) {
+            return;
+        }
+
+        System.out.println("\nDatos actuales del participante:");
+        System.out.println("Correo: " + participanteSeleccionado.getCorreo());
+        System.out.println("Nombre: " + participanteSeleccionado.getNombre());
+
+        String nuevoCorreo = leerLineaNoVacia("Nuevo correo: ");
+        String nuevoNombre = leerLineaNoVacia("Nuevo nombre: ");
+
+        try {
+            sorteoSeleccionado.modificarUsuario(
+                    organizador,
+                    participanteSeleccionado.getCorreo(),
+                    nuevoCorreo,
+                    nuevoNombre
+            );
+            System.out.println("Participante modificado correctamente.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+        } catch (SecurityException e) {
+            System.out.println("Error de permisos: " + e.getMessage());
+        }
+    }
+
+    private static void borrarParticipante() {
+        if (sorteos.isEmpty()) {
+            System.out.println("Error: primero debe registrar al menos un sorteo.");
+            return;
+        }
+
+        System.out.println("[Borrar participante]");
+        Sorteo sorteoSeleccionado = seleccionarSorteo();
+
+        if (sorteoSeleccionado == null) {
+            return;
+        }
+
+        Usuario participanteSeleccionado = seleccionarParticipante(sorteoSeleccionado);
+        if (participanteSeleccionado == null) {
+            return;
+        }
+
+        try {
+            sorteoSeleccionado.eliminarUsuario(
+                    organizador,
+                    participanteSeleccionado.getCorreo()
+            );
+            System.out.println("Participante eliminado correctamente.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+        } catch (SecurityException e) {
+            System.out.println("Error de permisos: " + e.getMessage());
+        }
+    }
+
+    private static void registrarRestriccion() {
+        if (sorteos.isEmpty()) {
+            System.out.println("Error: primero debe registrar al menos un sorteo.");
+            return;
+        }
+
+        System.out.println("[Registrar restricción]");
+        Sorteo sorteoSeleccionado = seleccionarSorteo();
+
+        if (sorteoSeleccionado == null) {
+            return;
+        }
+
+        // Obtener participantes
+        java.util.List<Usuario> participantes = sorteoSeleccionado.getParticipantes();
+
+        if (participantes.size() < 2) {
+            System.out.println("Error: se necesitan al menos 2 participantes.");
+            return;
+        }
+
+        // Mostrar participantes
+        System.out.println("\nSeleccione el PRIMER participante (quien NO puede sacar):");
+        Usuario origen = seleccionarParticipante(sorteoSeleccionado);
+        if (origen == null) return;
+
+        System.out.println("\nSeleccione el SEGUNDO participante (quien NO puede ser asignado):");
+        Usuario destino = seleccionarParticipante(sorteoSeleccionado);
+        if (destino == null) return;
+
+        // Validar que no sea el mismo
+        if (origen.getCorreo().equalsIgnoreCase(destino.getCorreo())) {
+            System.out.println("Error: no se puede crear restricción sobre el mismo participante.");
+            return;
+        }
+
+        try {
+            sorteoSeleccionado.agregarRestriccion(organizador, origen, destino);
+            System.out.println("Restricción registrada correctamente:");
+            System.out.println(origen.getNombre() + " NO puede sacar a " + destino.getNombre());
+        } catch (SecurityException e) {
+            System.out.println("Error de permisos: " + e.getMessage());
+        }
+    }
+
     private static void mostrarResumen() {
         if (sorteos.isEmpty()) {
             System.out.println("Error: aún no hay sorteos registrados.");

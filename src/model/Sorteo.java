@@ -74,14 +74,38 @@ public class Sorteo {
     }
 
     public void modificarUsuario(Usuario accionador,
-                                 String correo, String nuevoNombre) {
+                                String correoActual,
+                                String nuevoCorreo,
+                                String nuevoNombre) {
         validarOrganizador(accionador);
-        buscarUsuario(correo).modificarNombre(nuevoNombre);
+
+        Usuario participante = buscarUsuario(correoActual);
+
+        if (participante.getTipo() != TipoUsuario.PARTICIPANTE) {
+            throw new IllegalArgumentException("Solo se pueden modificar participantes.");
+        }
+
+        for (Usuario u : usuarios) {
+            if (!u.getCorreo().equalsIgnoreCase(correoActual)
+                    && u.getCorreo().equalsIgnoreCase(nuevoCorreo)) {
+                throw new IllegalArgumentException("Ya existe un participante con ese correo.");
+            }
+        }
+
+        participante.setCorreo(nuevoCorreo);
+        participante.modificarNombre(nuevoNombre);
     }
 
     public void eliminarUsuario(Usuario accionador, String correo) {
         validarOrganizador(accionador);
-        usuarios.remove(buscarUsuario(correo));
+
+        Usuario participante = buscarUsuario(correo);
+
+        if (participante.getTipo() != TipoUsuario.PARTICIPANTE) {
+            throw new IllegalArgumentException("Solo se pueden eliminar participantes.");
+        }
+
+    usuarios.remove(participante);
     }
 
     private Usuario buscarUsuario(String correo) {
@@ -96,9 +120,19 @@ public class Sorteo {
     // Restricciones
     // -------------------------------
 
+
     public void agregarRestriccion(Usuario accionador,
-                                   Usuario origen, Usuario destino) {
+                                Usuario origen,
+                                Usuario destino) {
+
         validarOrganizador(accionador);
+
+        for (RestriccionAsignacion r : restricciones) {
+            if (r.aplica(origen, destino)) {
+                throw new IllegalArgumentException("La restricción ya existe.");
+            }
+        }
+
         restricciones.add(new RestriccionAsignacion(origen, destino));
     }
 
@@ -161,6 +195,43 @@ public class Sorteo {
         this.fechaEvento = nuevaFecha;
     }
 
+
+    public Sorteo clonarSorteo(Usuario accionador, String nuevoNombre) {
+        validarOrganizador(accionador);
+
+        Sorteo clon = new Sorteo(
+                nuevoNombre,
+                this.descripcion,
+                this.presupuestoPorRegalo,
+                this.fechaEvento,
+                this.organizador
+        );
+
+        for (Usuario u : this.usuarios) {
+            if (u.getTipo() == TipoUsuario.PARTICIPANTE) {
+                Usuario copiaParticipante = new Usuario(
+                        u.getCorreo(),
+                        u.getNombre(),
+                        TipoUsuario.PARTICIPANTE
+                );
+                clon.agregarUsuario(accionador, copiaParticipante);
+            }
+        }
+
+        return clon;
+    }
+
+
+    public void anularSorteo(Usuario accionador) {
+        validarOrganizador(accionador);
+
+        if (estado == EstadoSorteo.ANULADO) {
+            throw new IllegalStateException("El sorteo ya se encuentra anulado.");
+        }
+
+        estado = EstadoSorteo.ANULADO;
+    } 
+
     private boolean violaRestriccion(Usuario d, Usuario r) {
         return restricciones.stream().anyMatch(res -> res.aplica(d, r));
     }
@@ -187,6 +258,20 @@ public class Sorteo {
         }
     }
 
+
+
+
+    public List<Usuario> getParticipantes() {
+        List<Usuario> participantes = new ArrayList<>();
+
+        for (Usuario u : usuarios) {
+            if (u.getTipo() == TipoUsuario.PARTICIPANTE) {
+                participantes.add(u);
+            }
+        }
+
+        return participantes;
+    }
 
     public void mostrarResumen() {
         System.out.println("[Resumen del sorteo]");
