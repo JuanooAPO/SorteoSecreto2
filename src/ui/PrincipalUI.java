@@ -107,7 +107,7 @@ public class PrincipalUI {
         System.out.println("1. Registrar datos del sorteo");
         System.out.println("2. Modificar sorteo");
         System.out.println("3. Clonar sorteo");
-        System.out.println("4. Registrar participantes");
+        System.out.println("4. Registrar participhttps://www.patspulpit.com/2022/2/1/22912265/patriots-tom-brady-officially-announces-retirement-nflantes");
         System.out.println("5. Modificar participante");
         System.out.println("6. Borrar participante");
         System.out.println("7. Consultar participantes");
